@@ -15,7 +15,6 @@ class Pipe:
         self.sprite = pygame.transform.scale(temp, (temp.get_width(), height))
         self.rect = pygame.Rect(screen_width, y, self.sprite.get_width(), height)
         self.velocity = -5
-    
 
 class ScorePipe:
     def __init__(self, x):
@@ -30,7 +29,7 @@ screen_height = 720
 background = pygame.image.load('background.png')
 background = pygame.transform.scale(background, (screen_width, screen_height)) 
 
-screen = pygame.display.set_mode((screen_width, screen_height),SCALED,vsync=True)
+screen = pygame.display.set_mode((screen_width, screen_height), SCALED, vsync=True)
 
 clock = pygame.time.Clock()
 
@@ -40,7 +39,7 @@ green = (0, 255, 0)
 red = (255, 0, 0)
 blue = (0, 0, 255)
 
-player = Player(100, 0)
+player = Player(100, 100)
 
 gravity = 0.5
 
@@ -55,6 +54,7 @@ def create_pipes():
     pipes.append(pipe1)
     pipes.append(pipe2)
     pipes.append(score_pipe)
+    
 
 ADD_PIPE_EVENT = pygame.USEREVENT + 1
 pygame.time.set_timer(ADD_PIPE_EVENT, 1200)
@@ -71,13 +71,14 @@ while True:
             if event.key == pygame.K_SPACE:
                 if game_over:
                     # Restart the game
-                    player = Player(100, 0)
+                    player.rect.y = 100
+                    player.velocity = 0
                     pipes = []
                     game_over = False
-                    score = 0  # Reset the score
+                    score = 0
                 else:
                     player.velocity = -10
-        if event.type == ADD_PIPE_EVENT:
+        if event.type == ADD_PIPE_EVENT and not game_over:
             create_pipes()
 
     if not game_over:
@@ -106,6 +107,12 @@ while True:
     screen.fill(white)
     screen.blit(background, (0, 0))
 
+    # Always draw pipes and player
+    for pipe in pipes:
+        if not isinstance(pipe, ScorePipe):
+            screen.blit(pipe.sprite, pipe.rect)
+    screen.blit(player.sprite, player.rect)
+
     if game_over:
         # Display "Game Over" in red color
         font = pygame.font.Font(None, 102)
@@ -113,18 +120,11 @@ while True:
         text_rect = text.get_rect(center=(screen_width/2, screen_height/2))
         screen.blit(text, text_rect)
 
-        # Display "Press any key to restart" in blue color and small size below
+        # Display "Press space to restart" in blue color and small size below
         font = pygame.font.Font(None, 24)
         restart_text = font.render("Press space to restart", True, blue)
         restart_text_rect = restart_text.get_rect(center=(screen_width/2, screen_height/2 + 50))
         screen.blit(restart_text, restart_text_rect)
-
-    else:
-        screen.blit(player.sprite, player.rect)
-
-        for pipe in pipes:
-            if not isinstance(pipe, ScorePipe):
-                screen.blit(pipe.sprite, pipe.rect)
 
     # Display the score
     font = pygame.font.Font(None, 36)
